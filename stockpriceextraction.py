@@ -41,7 +41,7 @@ new_time = ([parser.parse(x) for x in time])
 
 #Save event data to database
 # Open database connection
-db = mysql.connector.connect(user='root', password='chickenrice',
+db = mysql.connector.connect(user='root', password='password',
                              host='127.0.0.1',database='stock')
 
 # prepare a cursor object using cursor() method
