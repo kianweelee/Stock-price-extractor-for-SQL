@@ -35,22 +35,25 @@ CREATE DATABASE stock;
 ```sql
 USE stock;
 ```
-- Create a table on your database with the same name as the stock symbol. I am using AMD for this example.
+- Create a table on your database call nasdaq
 ```sql
-CREATE TABLE amd
+CREATE TABLE nasdaq
   (
    datetime DATETIME,
-   price FLOAT,
+   price FLOAT(2,2),
+   symbol VARCHAR
    created_at TIMESTAMP default now()
   );
 ```
+- Edit the config file
+You will need to change the db_user and db_password to your own. This is an essential step to prevent the disclosure of your server details.
 
 ### How to check if your code works
-- Using SELECT * from amd
+- Using SELECT * from nasdaq
 ```sql
-SELECT * from amd
+SELECT * from nasdaq
 ```
- * You should able to see 3 columns of data (datetime, price and created_at)
+ * You should able to see 4 columns of data (datetime, price, symbol and created_at)
 
 
 ### Licensing 
