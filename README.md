@@ -46,7 +46,7 @@ CREATE TABLE nasdaq
   );
 ```
 - Edit the config file
-You will need to change the db_user and db_password to your own. This is an essential step to prevent the disclosure of your server details.
+  - You will need to change the db_user and db_password to your own. This is an essential step to prevent the disclosure of your server details.
 
 ### How to check if your code works
 - Using SELECT * from nasdaq
