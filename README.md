@@ -41,7 +41,7 @@ CREATE TABLE nasdaq
   (
    datetime DATETIME,
    price FLOAT(2,2),
-   symbol VARCHAR
+   symbol VARCHAR,
    created_at TIMESTAMP default now()
   );
 ```
