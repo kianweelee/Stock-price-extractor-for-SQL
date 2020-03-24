@@ -1,18 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Mon Mar 23 12:13:42 2020
+Created on Tue Mar 24 15:55:11 2020
 
 @author: kianweelee
 """
 
+
 # Importing packages
 import mysql.connector
 import urllib
-import re
 import json 
 from dateutil import parser
-import datetime
+import config.setting
 
 # Create a user input to ask users to type in the stock symbol (eg: AMD, EDIT, NVO)
 stock_input = str(input("Please kindly input your code symbol\n"))
@@ -23,25 +23,47 @@ htmltext = urllib.request.urlopen("https://api.nasdaq.com/api/quote/{}/chart?ass
 # Parse json string and return a dict
 data = json.load(htmltext)
 
-# Looking into the dictionary and extracting out key = 'chart' data
-data1 = (data['data']['chart'])
 
-# Creating a list of time and prices 
-date = data['data']['timeAsOf'] # Contains date in mm dd, yyyy format
-time = []
-prices = []
-for i in data1:
-    time.append((i['z']['dateTime'])+ " " + date) # combine date and time together
-    prices.append((i['y']))
+def preprocessing(data):
+    '''
+    
+    Parameters
+    ----------
+    data : Dict
+        Contains a chart list that has datetime and prices 
 
-# time is in string format. Need to convert to datetime format to add into SQL
-new_time = ([parser.parse(x) for x in time])  
+    Returns
+    -------
+    A parameter containing tuples in this format:
+        (datetime (DATETIME), prices (FLOAT), symbol (STR))
+        
+    '''
+
+    # Looking into the dictionary and extracting out key = 'chart' data
+    data1 = (data['data']['chart'])
+    
+    # Creating a list of time and prices 
+    date = data['data']['timeAsOf'] # Contains date in mm dd, yyyy format
+    time = []
+    prices = []
+    for i in data1:
+        time.append((i['z']['dateTime'])+ " " + date) # combine date and time together
+        prices.append((i['y']))
+    
+    # time is in string format. Need to convert to datetime format to add into SQL
+    new_time = ([parser.parse(x) for x in time])  
+    
+    # Creating a list of tuples containing the parameters (datetime, prices, symbol)
+    param_lst = []
+    for i in range(0, len(prices)):
+        k = ((new_time[i], prices[i], stock_input))
+        param_lst.append(k)
+    return param_lst
 
 #____________________________SQL_____________________________________________________
-
 #Save event data to database
 # Open database connection
-db = mysql.connector.connect(user='root', password='password',
+db = mysql.connector.connect(user= config.setting.db_user , password= config.setting.db_password,
                              host='127.0.0.1',database='stock')
 
 # prepare a cursor object using cursor() method
@@ -50,49 +72,14 @@ cursor = db.cursor()
 
 # Prepare SQL query to INSERT a record into the database.
 
-for index in range(0, len(prices)):
-    sql = "INSERT INTO {}(datetime, prices) VALUES ('{}', '{}')".format(stock_input,new_time[index], prices[index])
-    try:
-        # Execute the SQL command
-        cursor.execute(sql)
-        # Commit your changes in the database
-        db.commit()
-    except:
-        # Rollback in case there is any error
-        db.rollback()
-        # disconnect from server
-        db.close()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+sql = "INSERT INTO nasdaq(datetime, prices, symbol) VALUES (%s, %s, %s)"
+try:
+    # Execute the SQL command with the required parameters
+    cursor.executemany(sql, preprocessing(data))
+    # Commit your changes in the database
+    db.commit()
+except:
+    # Rollback in case there is any error
+    db.rollback()
+    # disconnect from server
+    db.close()
