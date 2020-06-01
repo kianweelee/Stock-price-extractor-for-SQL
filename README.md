@@ -1,4 +1,4 @@
-# Stock-price-scraper-for-SQL
+# Stock price scraper for SQL
 This is a simple python script to scrape stock prices off NASDAQ API and feed it to MySQL. I have spent the past 2 weeks pondering on what beginner project I should do to apply my SQL knowledge and where do I even obtain the data from? I spent some time researching and found a few option. I can import a csv file into SQLite table using SQLite3 or [DB browser for SQLite](https://sqlitebrowser.org/) or scrape the data off a webpage and feed it into MySQL. I decided to take up the challenge to extract the data myself since that is a great way for me to practise on my python skill. **Do note that I am scrapping stock prices per minute and not per day.**
 
 ## Set up 
