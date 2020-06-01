@@ -57,4 +57,4 @@ SELECT * from nasdaq
 
 
 ### Licensing 
-This scraper is licensed under the MIT license. You can check the information inside the LICENSE file. To make it short, I wanted it to be free and open, so that anyone can contribute to it.
+This scraper is licensed under the GPL license. You can check the information inside the LICENSE file. To make it short, I wanted it to be free and open, so that anyone can contribute to it.
