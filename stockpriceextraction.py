@@ -9,7 +9,7 @@ Created on Tue Mar 24 15:55:11 2020
 
 # Importing packages
 import mysql.connector
-import urllib
+import urllib.request
 import json 
 from dateutil import parser
 import config.setting
@@ -18,7 +18,18 @@ import config.setting
 stock_input = str(input("Please kindly input your code symbol\n"))
 
 # Using package urllib to read url
-htmltext = urllib.request.urlopen("https://api.nasdaq.com/api/quote/{}/chart?assetclass=stocks".format(stock_input))
+url = ("https://api.nasdaq.com/api/quote/{}/chart?assetclass=stocks".format(stock_input))
+
+# Create fake browser visit
+req = urllib.request.Request(
+    url, 
+    data=None, 
+    headers={
+        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36'
+    }
+)	
+
+htmltext = urllib.request.urlopen(req)
 
 # Parse json string and return a dict
 data = json.load(htmltext)
