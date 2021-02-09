@@ -8,89 +8,49 @@ Created on Tue Mar 24 15:55:11 2020
 
 
 # Importing packages
-import mysql.connector
-import urllib.request
-import json 
-from dateutil import parser
+import pymysql
 import config.setting
+import yfinance as yf
+import pandas as pd
+from sqlalchemy import create_engine
 
 # Create a user input to ask users to type in the stock symbol (eg: AMD, EDIT, NVO)
 stock_input = str(input("Please kindly input your code symbol\n"))
 
-# Using package urllib to read url
-url = ("https://api.nasdaq.com/api/quote/{}/chart?assetclass=stocks".format(stock_input))
+# Using the yfinance to generate the dataframe containing the stock
+df = yf.download(tickers = stock_input,
+	period= "1d",
+	interval="1m")
 
-# Create fake browser visit
-req = urllib.request.Request(
-    url, 
-    data=None, 
-    headers={
-        'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/35.0.1916.47 Safari/537.36'
-    }
-)	
+# Add in new column with the stock name
+df['Symbol']=stock_input
 
-htmltext = urllib.request.urlopen(req)
+# Rename Adj close column name to ommit whitespace
+df.rename(columns={'Adj Close':'Adj_Close'}, inplace=True)
 
-# Parse json string and return a dict
-data = json.load(htmltext)
-
-
-def preprocessing(data):
-    '''
-    
-    Parameters
-    ----------
-    data : Dict
-        Contains a chart list that has datetime and prices 
-
-    Returns
-    -------
-    A parameter containing tuples in this format:
-        (datetime (DATETIME), prices (FLOAT), symbol (STR))
-        
-    '''
-
-    # Looking into the dictionary and extracting out key = 'chart' data
-    data1 = (data['data']['chart'])
-    
-    # Creating a list of time and prices 
-    date = data['data']['timeAsOf'] # Contains date in mm dd, yyyy format
-    time = []
-    prices = []
-    for i in data1:
-        time.append((i['z']['dateTime'])+ " " + date) # combine date and time together
-        prices.append((i['y']))
-    
-    # time is in string format. Need to convert to datetime format to add into SQL
-    new_time = ([parser.parse(x) for x in time])  
-    
-    # Creating a list of tuples containing the parameters (datetime, prices, symbol)
-    param_lst = []
-    for i in range(0, len(prices)):
-        k = ((new_time[i], prices[i], stock_input))
-        param_lst.append(k)
-    return param_lst
+# Round all values to 2 decimal places
+df = df.round(2)
 
 #____________________________SQL_____________________________________________________
 #Save event data to database
 # Open database connection
-db = mysql.connector.connect(user= config.setting.db_user , password= config.setting.db_password,
-                             host='127.0.0.1',database='stock')
 
-# prepare a cursor object using cursor() method
-cursor = db.cursor()
-   
+table_bool = str(input("Do you have an existing table to store your data? Y/N\n"))
 
-# Prepare SQL query to INSERT a record into the database.
+while table_bool.lower() not in ('y','n'):
+	table_bool = str(input("Do you have an existing table to store your data? Y/N\n"))
 
-sql = "INSERT INTO nasdaq(datetime, prices, symbol) VALUES (%s, %s, %s)"
-try:
-    # Execute the SQL command with the required parameters
-    cursor.executemany(sql, preprocessing(data))
-    # Commit your changes in the database
-    db.commit()
-except:
-    # Rollback in case there is any error
-    db.rollback()
-    # disconnect from server
-    db.close()
+# If user has a table, ask for table name:
+if table_bool == 'y':
+	table_name = str(input("Please tell us your table name:\n"))
+	engine = create_engine('mysql+pymysql://{user}:{password}@localhost/{database_name}'.format(user = config.setting.db_user, password = config.setting.db_password, database_name = config.setting.db_name))
+	df.to_sql(name='{name}'.format(name = table_name), con=engine, if_exists = 'append', index=False)
+	print("Data successfully exported!")
+
+else:
+	new_table = str(input("What will you like to name your table?\n"))
+	conn = pymysql.connect(host=config.setting.host, user=config.setting.db_user, passwd=config.setting.db_password, db = config.setting.db_name)
+	conn.cursor().execute("CREATE TABLE IF NOT EXISTS {new_name} (Open DECIMAL(4,2), High DECIMAL(4,2), Low DECIMAL(4,2), Close DECIMAL(4,2), Adj_Close DECIMAL(4,2), Volume INT, Symbol VARCHAR(5) ) ".format(new_name = new_table))
+	engine = create_engine('mysql+pymysql://{user}:{password}@localhost/{database_name}'.format(user = config.setting.db_user, password = config.setting.db_password, database_name = config.setting.db_name))
+	df.to_sql(name='{new_name}'.format(new_name = new_table), con=engine, if_exists = 'append', index=False)
+	print("Data successfully exported!")
