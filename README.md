@@ -1,4 +1,4 @@
-# Stock price scraper for SQL
+# Exporting stock prices to SQL
 This is a simple python script to that extract data from a python package called yfinance and feed it to MySQL. The initial script that I have created was able to scrape data from NASDAQ API but it is no longer available. Hence, I have fall back on using the yfinance package to export stock data into my database.
 
 ## Set up 
