@@ -1,15 +1,13 @@
 # Stock price scraper for SQL
-This is a simple python script to scrape stock prices off NASDAQ API and feed it to MySQL. I have spent the past 2 weeks pondering on what beginner project I should do to apply my SQL knowledge and where do I even obtain the data from? I spent some time researching and found a few option. I can import a csv file into SQLite table using SQLite3 or [DB browser for SQLite](https://sqlitebrowser.org/) or scrape the data off a webpage and feed it into MySQL. I decided to take up the challenge to extract the data myself since that is a great way for me to practise on my python skill. **Do note that I am scrapping stock prices per minute and not per day.**
+This is a simple python script to that extract data from a python package called yfinance and feed it to MySQL. The initial script that I have created was able to scrape data from NASDAQ API but it is no longer available. Hence, I have fall back on using the yfinance package to export stock data into my database.
 
 ## Set up 
 ### Dependencies 
-- Python 3.8x
-- python-dateutil 2.8.1 or newer
-- ujson 1.35 or newer
-- urllib3 1.25.8 or newer
-- mysql-connector-python 8.0.18 or newer
-- MySQL 8.0.19 or newer
-- Internet connection
+PyMySQL==1.0.2
+pandas==1.0.5
+SQLAlchemy==1.3.17
+yfinance==0.1.55
+
 
 ### Installing dependencies 
 - **Python**: You can install Python using [Anaconda](https://www.anaconda.com/distribution/). It is the easiest way to install python and it comes with a good amount of data science packages.
@@ -27,33 +25,9 @@ conda install -c anaconda mysql-connector-python
 ```sql
 mysql -u root -p
 ```
-- Create a database call stock
-```sql
-CREATE DATABASE stock;
-```
-- Select database
-```sql
-USE stock;
-```
-- Create a table on your database call nasdaq
-```sql
-CREATE TABLE nasdaq
-  (
-   datetime DATETIME,
-   price FLOAT(2,2),
-   symbol VARCHAR(10),
-   created_at TIMESTAMP default now()
-  );
-```
-- Edit the config file
-  - You will need to change the db_user and db_password to your own. This is an essential step to prevent the disclosure of your server details.
 
-### How to check if your code works
-- Using SELECT * from nasdaq
-```sql
-SELECT * from nasdaq
-```
- * You should able to see 4 columns of data (datetime, price, symbol and created_at)
+- Edit the config file
+  - You will need to change the details to your own. This is an essential step to prevent the disclosure of your server details.
 
 
 ### Licensing 
