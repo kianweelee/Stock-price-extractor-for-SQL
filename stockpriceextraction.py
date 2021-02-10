@@ -31,6 +31,9 @@ df.rename(columns={'Adj Close':'Adj_Close'}, inplace=True)
 # Round all values to 2 decimal places
 df = df.round(2)
 
+# Convert datetime row index into column
+df.reset_index(level=0, inplace=True) 
+
 #____________________________SQL_____________________________________________________
 #Save event data to database
 # Open database connection
@@ -50,7 +53,7 @@ if table_bool == 'y':
 else:
 	new_table = str(input("What will you like to name your table?\n"))
 	conn = pymysql.connect(host=config.setting.host, user=config.setting.db_user, passwd=config.setting.db_password, db = config.setting.db_name)
-	conn.cursor().execute("CREATE TABLE IF NOT EXISTS {new_name} (Open DECIMAL(4,2), High DECIMAL(4,2), Low DECIMAL(4,2), Close DECIMAL(4,2), Adj_Close DECIMAL(4,2), Volume INT, Symbol VARCHAR(5) ) ".format(new_name = new_table))
+	conn.cursor().execute("CREATE TABLE IF NOT EXISTS {new_name} (Datetime TIMESTAMP, Open DECIMAL(4,2), High DECIMAL(4,2), Low DECIMAL(4,2), Close DECIMAL(4,2), Adj_Close DECIMAL(4,2), Volume INT, Symbol VARCHAR(5) ) ".format(new_name = new_table))
 	engine = create_engine('mysql+pymysql://{user}:{password}@localhost/{database_name}'.format(user = config.setting.db_user, password = config.setting.db_password, database_name = config.setting.db_name))
 	df.to_sql(name='{new_name}'.format(new_name = new_table), con=engine, if_exists = 'append', index=False)
 	print("Data successfully exported!")
